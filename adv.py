@@ -68,21 +68,21 @@ def bfs(visited_rooms):
 
     # add room id
     qq.enqueue([room.id])
-    # while loop setup
+    # while loop
     while qq.size() > 0:
         path = qq.dequeue()
         # the last node
         end = path[-1]
         if end not in visited:
             visited.add(end)
-            # for loop that checks if last room has been visited
+            # checks if last room has been visited
             for exit_direction in visited_rooms[end]:
                 # if no exit exists
                 if (visited_rooms[end][exit_direction] == '?'):
                     return path
                 # when it hasn't been visited run this
                 elif (visited_rooms[end][exit_direction] not in visited):
-                    # create a new path
+                    # create/ add a new path
                     new_path = path + [visited_rooms[end][exit_direction]]
                     # add the new path
                     qq.enqueue(new_path)
@@ -125,64 +125,67 @@ player = Player(world.starting_room)
 
 
 traversal_path = ['n', 's', 'e', 'w']
+# list
 visited_rooms = {}
 
 # Start by writing an algorithm that picks a random unexplored direction from the player's current room, travels and logs that direction, then loops. This should cause your player to walk a depth-first traversal. When you reach a dead-end (i.e. a room with no unexplored paths), walk back to the nearest room that does contain an unexplored path.
 
 # main while loop
 while(len(visited_rooms) < len(room_graph)):
-    # moving theoretical player through the rooms
+    # moving player through rooms to find "?"
     if player.current_room.id not in visited_rooms:
         enter_room(player.current_room, visited_rooms)
 
-    # creating a list of exits
+    # list of exits for "?"
     exits = []
     # You can find the path to the shortest unexplored room by using a breadth-first search for a room with a '?' for an exit. If you use the bfs code from the homework, you will need to make a few modifications.
     for new_direction in visited_rooms[player.current_room.id]:
         if (visited_rooms[player.current_room.id][new_direction] == '?'):
             exits.append(new_direction)
 
-    # incase length of exits is 0
+    # incase length of exits if 0
     if (len(exits) == 0):
         path = bfs(visited_rooms)
 
         for id in path:
+            # set visited to current id
             for exit_direction in visited_rooms[player.current_room.id]:
+                # if visited room ref is id is not
                 if (exit_direction in visited_rooms[player.current_room.id]):
                     # comparing the rooms id's
                     if (visited_rooms[player.current_room.id][exit_direction] == id and player.current_room.id != id):
-                        # appending the exit direction to traversal path
+                        # append the exit path to traversal path
                         traversal_path.append(exit_direction)
                         new_room = player.current_room.get_room_in_direction(
                             exit_direction)
-                        # setting new room id
+                        # set new room id
                         visited_rooms[player.current_room.id][exit_direction] = new_room.id
-                        # checking if new room id isn't in visited...
+                        # if new room id is not in visited
                         if (new_room.id not in visited_rooms):
-                            # enter this room using enter_room
+                            # move player to this room
                             enter_room(new_room, visited_rooms)
-                        # using the reverse method to get back to original point and find new exits
+                        # use reverse method to get back to original point and find new exits??? is this the best strategy
                         visited_rooms[new_room.id][reverse(
                             exit_direction)] = player.current_room.id
-                        # instruct player to move to the exit
+                        # move player to the new exit
                         player.travel(exit_direction)
 # Instead of searching for a target vertex, you are searching for an exit with a '?' as the value. If an exit has been explored, you can put it in your BFS queue like normal.
     else:
-        # search for new exits using random
+        # search exits using random
         new_exit = random.choice(exits)
-        # add the exit to traversal
+        # add the exit to traversal path
         traversal_path.append(new_exit)
-        # find exit in new room
+        # find exit in new room pass by reference
         new_room = player.current_room.get_room_in_direction(new_exit)
-        # setting our new room id to that room
+        # setting our new room id to current room
         visited_rooms[player.current_room.id][new_exit] = new_room.id
-        # check if the new rooms id is not in the visited rooms
+        # check if the new current rooms id is not in the visited rooms
         if (new_room.id not in visited_rooms):
-            # make the player move into that room
+            # move player into room if not visited
             enter_room(new_room, visited_rooms)
-        # now utilize the reverse method once again
+        # use reverse method to find new exit "?"
         visited_rooms[new_room.id][reverse(new_exit)] = player.current_room.id
-        # move player to newly found exit
+        # move player to new found exit
         player.travel(new_exit)
 
 
